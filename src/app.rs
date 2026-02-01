@@ -9,13 +9,18 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph},
 };
 
-use crate::colours::ThemeColours;
 use crate::{card::Card, widgets::CardWidget};
+use crate::{card::Deck, colours::ThemeColours};
 
 #[derive(Debug)]
 pub struct App {
     exit: bool,
     theme_colours: ThemeColours,
+    deck: Deck,
+    weapon: Option<Card>,
+    discard: Option<Card>,
+    last_enemy: Option<Card>,
+    room: Option<Vec<Card>>,
 }
 
 impl App {
@@ -23,6 +28,56 @@ impl App {
         Self {
             exit: false,
             theme_colours: ThemeColours::dungeon(),
+            deck: Deck::from_cards(vec![
+                Card::new(crate::card::Suit::Spades, crate::card::Rank::Two),
+                Card::new(crate::card::Suit::Spades, crate::card::Rank::Three),
+                Card::new(crate::card::Suit::Spades, crate::card::Rank::Four),
+                Card::new(crate::card::Suit::Spades, crate::card::Rank::Five),
+                Card::new(crate::card::Suit::Spades, crate::card::Rank::Six),
+                Card::new(crate::card::Suit::Spades, crate::card::Rank::Seven),
+                Card::new(crate::card::Suit::Spades, crate::card::Rank::Eight),
+                Card::new(crate::card::Suit::Spades, crate::card::Rank::Nine),
+                Card::new(crate::card::Suit::Spades, crate::card::Rank::Ten),
+                Card::new(crate::card::Suit::Spades, crate::card::Rank::Jack),
+                Card::new(crate::card::Suit::Spades, crate::card::Rank::Queen),
+                Card::new(crate::card::Suit::Spades, crate::card::Rank::King),
+                Card::new(crate::card::Suit::Spades, crate::card::Rank::Ace),
+                Card::new(crate::card::Suit::Clubs, crate::card::Rank::Two),
+                Card::new(crate::card::Suit::Clubs, crate::card::Rank::Three),
+                Card::new(crate::card::Suit::Clubs, crate::card::Rank::Four),
+                Card::new(crate::card::Suit::Clubs, crate::card::Rank::Five),
+                Card::new(crate::card::Suit::Clubs, crate::card::Rank::Six),
+                Card::new(crate::card::Suit::Clubs, crate::card::Rank::Seven),
+                Card::new(crate::card::Suit::Clubs, crate::card::Rank::Eight),
+                Card::new(crate::card::Suit::Clubs, crate::card::Rank::Nine),
+                Card::new(crate::card::Suit::Clubs, crate::card::Rank::Ten),
+                Card::new(crate::card::Suit::Clubs, crate::card::Rank::Jack),
+                Card::new(crate::card::Suit::Clubs, crate::card::Rank::Queen),
+                Card::new(crate::card::Suit::Clubs, crate::card::Rank::King),
+                Card::new(crate::card::Suit::Clubs, crate::card::Rank::Ace),
+                Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Two),
+                Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Three),
+                Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Four),
+                Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Five),
+                Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Six),
+                Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Seven),
+                Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Eight),
+                Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Nine),
+                Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Ten),
+                Card::new(crate::card::Suit::Hearts, crate::card::Rank::Two),
+                Card::new(crate::card::Suit::Hearts, crate::card::Rank::Three),
+                Card::new(crate::card::Suit::Hearts, crate::card::Rank::Four),
+                Card::new(crate::card::Suit::Hearts, crate::card::Rank::Five),
+                Card::new(crate::card::Suit::Hearts, crate::card::Rank::Six),
+                Card::new(crate::card::Suit::Hearts, crate::card::Rank::Seven),
+                Card::new(crate::card::Suit::Hearts, crate::card::Rank::Eight),
+                Card::new(crate::card::Suit::Hearts, crate::card::Rank::Nine),
+                Card::new(crate::card::Suit::Hearts, crate::card::Rank::Ten),
+            ]),
+            weapon: None,
+            discard: None,
+            last_enemy: None,
+            room: None,
         }
     }
 
@@ -130,41 +185,98 @@ impl App {
             })
             .collect();
 
+        let last_enemy_inner = last_enemy_block.inner(chunks.last_defeated_enemy);
+        let last_enemy_chunks = Layout::default()
+            .direction(ratatui::layout::Direction::Vertical)
+            .constraints([
+                Constraint::Min(0),
+                Constraint::Length(14),
+                Constraint::Min(0),
+            ])
+            .split(last_enemy_inner);
+        let last_enemy_chunks = Layout::default()
+            .direction(ratatui::layout::Direction::Horizontal)
+            .constraints([
+                Constraint::Min(0),
+                Constraint::Length(24),
+                Constraint::Min(0),
+            ])
+            .split(last_enemy_chunks[1]);
+
+        let discard_inner = discard_block.inner(chunks.discard);
+        let discard_inner_chunks = Layout::default()
+            .direction(ratatui::layout::Direction::Vertical)
+            .constraints([
+                Constraint::Min(0),
+                Constraint::Length(14),
+                Constraint::Min(0),
+            ])
+            .split(discard_inner);
+        let discard_inner_chunks = Layout::default()
+            .direction(ratatui::layout::Direction::Horizontal)
+            .constraints([
+                Constraint::Min(0),
+                Constraint::Length(24),
+                Constraint::Min(0),
+            ])
+            .split(discard_inner_chunks[1]);
+
         let title = Paragraph::new(Line::from("SCOUNDREL"))
             .set_style(self.theme_colours.main.title)
             .bold()
             .centered()
             .block(title_block);
 
-        let cards = vec![
-            Card::new(crate::card::Suit::Spades, crate::card::Rank::Eight),
-            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Five),
-            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Ace),
-            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Ten),
-        ];
-
         frame.render_widget(title, chunks.header);
         frame.render_widget(deck_block, chunks.deck);
+
         frame.render_widget(room_block, chunks.room);
-        for (card_in_room, area) in cards.iter().zip(room_inner_areas.iter()) {
-            let widget = CardWidget {
-                rank: card_in_room.rank,
-                suit: card_in_room.suit,
-                suit_colours: self.theme_colours.suit.clone(),
-            };
-            frame.render_widget(widget, *area);
+        if let Some(room) = &self.room {
+            for (card_in_room, area) in room.iter().zip(room_inner_areas.iter()) {
+                let widget = CardWidget {
+                    rank: card_in_room.rank,
+                    suit: card_in_room.suit,
+                    suit_colours: self.theme_colours.suit.clone(),
+                };
+                frame.render_widget(widget, *area);
+            }
         }
+
         frame.render_widget(weapon_block_outer, chunks.current_weapon);
-        frame.render_widget(
-            CardWidget {
-                rank: crate::card::Rank::Nine,
-                suit: crate::card::Suit::Clubs,
-                suit_colours: self.theme_colours.suit.clone(),
-            },
-            weapon_inner_chunks[1],
-        );
+        if let Some(weapon) = &self.weapon {
+            frame.render_widget(
+                CardWidget {
+                    rank: weapon.rank,
+                    suit: weapon.suit,
+                    suit_colours: self.theme_colours.suit.clone(),
+                },
+                weapon_inner_chunks[1],
+            );
+        }
+
         frame.render_widget(last_enemy_block, chunks.last_defeated_enemy);
+        if let Some(last_enemy) = &self.last_enemy {
+            frame.render_widget(
+                CardWidget {
+                    rank: last_enemy.rank,
+                    suit: last_enemy.suit,
+                    suit_colours: self.theme_colours.suit.clone(),
+                },
+                last_enemy_chunks[1],
+            );
+        }
+
         frame.render_widget(discard_block, chunks.discard);
+        if let Some(discard) = &self.discard {
+            frame.render_widget(
+                CardWidget {
+                    rank: discard.rank,
+                    suit: discard.suit,
+                    suit_colours: self.theme_colours.suit.clone(),
+                },
+                discard_inner_chunks[1],
+            );
+        }
     }
 
     fn handle_events(&mut self) -> io::Result<()> {
