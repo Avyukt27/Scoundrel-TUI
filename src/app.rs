@@ -1,11 +1,11 @@
-use std::{io, rc::Rc};
+use std::io;
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
     DefaultTerminal, Frame,
     buffer::Buffer,
     layout::{Constraint, Layout, Rect},
-    style::Stylize,
+    style::{Color, Styled, Stylize},
     symbols::border,
     text::{Line, Text},
     widgets::{Block, Borders, Paragraph, Widget},
@@ -13,7 +13,6 @@ use ratatui::{
 
 #[derive(Default, Debug)]
 pub struct App {
-    counter: i8,
     exit: bool,
 }
 
@@ -29,30 +28,57 @@ impl App {
     fn draw(&self, frame: &mut Frame) {
         let chunks = self.get_layout(frame);
 
-        let title = Line::from(" Example Title ".yellow().bold());
-        let body_left_block_title = Line::from(" Left block title ".red().italic());
-        let body_right_block_title = Line::from(" Right block title ".green().italic());
+        let title_colour = Color::Rgb(180, 40, 45);
+
+        let title = Line::from("SCOUNDREL".set_style(title_colour).bold());
 
         frame.render_widget(
-            Block::bordered()
-                .title(title.centered())
-                .borders(Borders::ALL)
-                .border_type(ratatui::widgets::BorderType::Double),
+            Paragraph::new(title).centered().block(
+                Block::bordered()
+                    .borders(Borders::ALL)
+                    .border_type(ratatui::widgets::BorderType::Thick)
+                    .border_style(title_colour),
+            ),
             chunks.header,
         );
         frame.render_widget(
             Block::bordered()
-                .title(body_left_block_title.left_aligned())
+                .title(Line::from(" Deck ").italic().left_aligned())
                 .borders(Borders::ALL)
                 .border_type(ratatui::widgets::BorderType::Rounded),
-            chunks.body_left,
+            chunks.deck,
         );
         frame.render_widget(
             Block::bordered()
-                .title(body_right_block_title.left_aligned())
+                .title(Line::from(" Room ").italic().left_aligned())
                 .borders(Borders::ALL)
                 .border_type(ratatui::widgets::BorderType::Rounded),
-            chunks.body_right,
+            chunks.room,
+        );
+        frame.render_widget(
+            Block::bordered()
+                .title(Line::from(" Current Weapon ").italic().left_aligned())
+                .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded),
+            chunks.current_weapon,
+        );
+        frame.render_widget(
+            Block::bordered()
+                .title(
+                    Line::from(" Last Enemy Defeated with a Weapon ")
+                        .italic()
+                        .left_aligned(),
+                )
+                .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded),
+            chunks.last_defeated_enemy,
+        );
+        frame.render_widget(
+            Block::bordered()
+                .title(Line::from(" Discard ").italic().left_aligned())
+                .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded),
+            chunks.discard,
         );
     }
 
@@ -76,23 +102,41 @@ impl App {
     fn get_layout(&self, frame: &mut Frame) -> UiLayout {
         let header = Layout::default()
             .direction(ratatui::layout::Direction::Vertical)
-            .constraints([Constraint::Percentage(15), Constraint::Min(0)])
+            .constraints([Constraint::Max(3), Constraint::Min(0)])
             .split(frame.area());
-        let body = Layout::default()
-            .direction(ratatui::layout::Direction::Horizontal)
+        let row_1 = Layout::default()
+            .direction(ratatui::layout::Direction::Vertical)
             .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
             .split(header[1]);
+        let row_2 = Layout::default()
+            .direction(ratatui::layout::Direction::Horizontal)
+            .constraints([Constraint::Percentage(20), Constraint::Percentage(80)])
+            .split(row_1[0]);
+        let row_3 = Layout::default()
+            .direction(ratatui::layout::Direction::Horizontal)
+            .constraints([
+                Constraint::Min(20),
+                Constraint::Min(20),
+                Constraint::Max(30),
+            ])
+            .split(row_1[1]);
 
         UiLayout {
             header: header[0],
-            body_left: body[0],
-            body_right: body[1],
+            deck: row_2[0],
+            room: row_2[1],
+            current_weapon: row_3[0],
+            last_defeated_enemy: row_3[1],
+            discard: row_3[2],
         }
     }
 }
 
 struct UiLayout {
     header: Rect,
-    body_left: Rect,
-    body_right: Rect,
+    deck: Rect,
+    room: Rect,
+    current_weapon: Rect,
+    last_defeated_enemy: Rect,
+    discard: Rect,
 }
