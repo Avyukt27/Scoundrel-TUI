@@ -3,13 +3,14 @@ use std::io;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
     DefaultTerminal, Frame,
-    buffer::Buffer,
     layout::{Constraint, Layout, Rect},
-    style::{Color, Styled, Stylize},
-    symbols::border,
-    text::{Line, Text},
-    widgets::{Block, Borders, Paragraph, Widget},
+    style::{Styled, Stylize},
+    text::Line,
+    widgets::{Block, Borders, Paragraph},
 };
+
+use crate::card::Card;
+use crate::colours::ThemeColours;
 
 #[derive(Debug)]
 pub struct App {
@@ -38,14 +39,14 @@ impl App {
 
         frame.render_widget(
             Paragraph::new(Line::from("SCOUNDREL"))
-                .set_style(self.theme_colours.title)
+                .set_style(self.theme_colours.main.title)
                 .bold()
                 .centered()
                 .block(
                     Block::bordered()
                         .borders(Borders::ALL)
                         .border_type(ratatui::widgets::BorderType::Thick)
-                        .border_style(self.theme_colours.title),
+                        .border_style(self.theme_colours.main.title),
                 ),
             chunks.header,
         );
@@ -55,11 +56,11 @@ impl App {
                     Line::from(" Deck ")
                         .italic()
                         .left_aligned()
-                        .set_style(self.theme_colours.deck),
+                        .set_style(self.theme_colours.main.deck),
                 )
                 .borders(Borders::ALL)
                 .border_type(ratatui::widgets::BorderType::Rounded)
-                .border_style(self.theme_colours.deck),
+                .border_style(self.theme_colours.main.deck),
             chunks.deck,
         );
         frame.render_widget(
@@ -68,24 +69,27 @@ impl App {
                     Line::from(" Room ")
                         .italic()
                         .left_aligned()
-                        .set_style(self.theme_colours.room),
+                        .set_style(self.theme_colours.main.room),
                 )
                 .borders(Borders::ALL)
                 .border_type(ratatui::widgets::BorderType::Rounded)
-                .border_style(self.theme_colours.room),
+                .border_style(self.theme_colours.main.room),
             chunks.room,
         );
         frame.render_widget(
-            Block::bordered()
-                .title(
-                    Line::from(" Current Weapon ")
-                        .italic()
-                        .left_aligned()
-                        .set_style(self.theme_colours.weapon),
-                )
-                .borders(Borders::ALL)
-                .border_type(ratatui::widgets::BorderType::Rounded)
-                .border_style(self.theme_colours.weapon),
+            self.get_card(Card::new(crate::card::Suit::Spades, crate::card::Rank::Ten))
+                .block(
+                    Block::bordered()
+                        .title(
+                            Line::from(" Current Weapon ")
+                                .italic()
+                                .left_aligned()
+                                .set_style(self.theme_colours.main.weapon),
+                        )
+                        .borders(Borders::ALL)
+                        .border_type(ratatui::widgets::BorderType::Rounded)
+                        .border_style(self.theme_colours.main.weapon),
+                ),
             chunks.current_weapon,
         );
         frame.render_widget(
@@ -94,11 +98,11 @@ impl App {
                     Line::from(" Last Enemy Defeated with a Weapon ")
                         .italic()
                         .left_aligned()
-                        .set_style(self.theme_colours.last_enemy),
+                        .set_style(self.theme_colours.main.last_enemy),
                 )
                 .borders(Borders::ALL)
                 .border_type(ratatui::widgets::BorderType::Rounded)
-                .border_style(self.theme_colours.last_enemy),
+                .border_style(self.theme_colours.main.last_enemy),
             chunks.last_defeated_enemy,
         );
         frame.render_widget(
@@ -107,11 +111,11 @@ impl App {
                     Line::from(" Discard ")
                         .italic()
                         .left_aligned()
-                        .set_style(self.theme_colours.discard),
+                        .set_style(self.theme_colours.main.discard),
                 )
                 .borders(Borders::ALL)
                 .border_type(ratatui::widgets::BorderType::Rounded)
-                .border_style(self.theme_colours.discard),
+                .border_style(self.theme_colours.main.discard),
             chunks.discard,
         );
     }
@@ -164,6 +168,11 @@ impl App {
             discard: row_3[2],
         }
     }
+
+    fn get_card(&self, card: Card) -> Paragraph<'static> {
+        let rank_text = Line::from(format!("{:?}", card.rank as u8)).bold();
+        Paragraph::new(rank_text).set_style(self.theme_colours.suit.colour_for(card.suit))
+    }
 }
 
 struct UiLayout {
@@ -173,27 +182,4 @@ struct UiLayout {
     current_weapon: Rect,
     last_defeated_enemy: Rect,
     discard: Rect,
-}
-
-#[derive(Debug)]
-struct ThemeColours {
-    title: Color,
-    deck: Color,
-    room: Color,
-    weapon: Color,
-    last_enemy: Color,
-    discard: Color,
-}
-
-impl ThemeColours {
-    pub fn dungeon() -> Self {
-        Self {
-            title: Color::Rgb(180, 40, 45),
-            deck: Color::Rgb(92, 64, 51),
-            room: Color::Rgb(70, 68, 60),
-            weapon: Color::Rgb(200, 200, 200),
-            last_enemy: Color::Rgb(160, 60, 60),
-            discard: Color::Rgb(90, 90, 90),
-        }
-    }
 }
