@@ -4,7 +4,7 @@ use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
     DefaultTerminal, Frame,
     layout::{Constraint, Layout, Rect},
-    style::{Styled, Stylize},
+    style::{Color, Style, Styled, Stylize},
     text::Line,
     widgets::{Block, Borders, Paragraph},
 };
@@ -37,87 +37,84 @@ impl App {
     fn draw(&self, frame: &mut Frame) {
         let chunks = self.get_layout(frame);
 
-        frame.render_widget(
-            Paragraph::new(Line::from("SCOUNDREL"))
-                .set_style(self.theme_colours.main.title)
-                .bold()
-                .centered()
-                .block(
-                    Block::bordered()
-                        .borders(Borders::ALL)
-                        .border_type(ratatui::widgets::BorderType::Thick)
-                        .border_style(self.theme_colours.main.title),
-                ),
-            chunks.header,
-        );
-        frame.render_widget(
-            Block::bordered()
-                .title(
-                    Line::from(" Deck ")
-                        .italic()
-                        .left_aligned()
-                        .set_style(self.theme_colours.main.deck),
-                )
-                .borders(Borders::ALL)
-                .border_type(ratatui::widgets::BorderType::Rounded)
-                .border_style(self.theme_colours.main.deck),
-            chunks.deck,
-        );
-        frame.render_widget(
-            Block::bordered()
-                .title(
-                    Line::from(" Room ")
-                        .italic()
-                        .left_aligned()
-                        .set_style(self.theme_colours.main.room),
-                )
-                .borders(Borders::ALL)
-                .border_type(ratatui::widgets::BorderType::Rounded)
-                .border_style(self.theme_colours.main.room),
-            chunks.room,
-        );
-        frame.render_widget(
-            self.get_card(Card::new(crate::card::Suit::Spades, crate::card::Rank::Ten))
-                .block(
-                    Block::bordered()
-                        .title(
-                            Line::from(" Current Weapon ")
-                                .italic()
-                                .left_aligned()
-                                .set_style(self.theme_colours.main.weapon),
-                        )
-                        .borders(Borders::ALL)
-                        .border_type(ratatui::widgets::BorderType::Rounded)
-                        .border_style(self.theme_colours.main.weapon),
-                ),
-            chunks.current_weapon,
-        );
-        frame.render_widget(
-            Block::bordered()
-                .title(
-                    Line::from(" Last Enemy Defeated with a Weapon ")
-                        .italic()
-                        .left_aligned()
-                        .set_style(self.theme_colours.main.last_enemy),
-                )
-                .borders(Borders::ALL)
-                .border_type(ratatui::widgets::BorderType::Rounded)
-                .border_style(self.theme_colours.main.last_enemy),
-            chunks.last_defeated_enemy,
-        );
-        frame.render_widget(
-            Block::bordered()
-                .title(
-                    Line::from(" Discard ")
-                        .italic()
-                        .left_aligned()
-                        .set_style(self.theme_colours.main.discard),
-                )
-                .borders(Borders::ALL)
-                .border_type(ratatui::widgets::BorderType::Rounded)
-                .border_style(self.theme_colours.main.discard),
-            chunks.discard,
-        );
+        let card = self.get_card(Card::new(
+            crate::card::Suit::Hearts,
+            crate::card::Rank::Jack,
+        ));
+
+        let title_block = Block::bordered()
+            .borders(Borders::ALL)
+            .border_type(ratatui::widgets::BorderType::Thick)
+            .border_style(Style::default().fg(self.theme_colours.main.title));
+        let deck_block = Block::bordered()
+            .title(
+                Line::from(" Deck ")
+                    .italic()
+                    .left_aligned()
+                    .set_style(self.theme_colours.main.deck),
+            )
+            .border_type(ratatui::widgets::BorderType::Rounded)
+            .border_style(Style::default().fg(self.theme_colours.main.deck));
+        let room_block = Block::bordered()
+            .title(
+                Line::from(" Room ")
+                    .italic()
+                    .left_aligned()
+                    .set_style(self.theme_colours.main.room),
+            )
+            .border_type(ratatui::widgets::BorderType::Rounded)
+            .border_style(Style::default().fg(self.theme_colours.main.room));
+        let weapon_block_outer = Block::bordered()
+            .title(
+                Line::from(" Current Weapon ")
+                    .italic()
+                    .left_aligned()
+                    .set_style(self.theme_colours.main.weapon),
+            )
+            .border_type(ratatui::widgets::BorderType::Rounded)
+            .border_style(Style::default().fg(self.theme_colours.main.weapon));
+        let last_enemy_block = Block::bordered()
+            .title(
+                Line::from(" Last Enemy Defeated with a Weapon ")
+                    .italic()
+                    .left_aligned()
+                    .set_style(self.theme_colours.main.last_enemy),
+            )
+            .border_type(ratatui::widgets::BorderType::Rounded)
+            .border_style(Style::default().fg(self.theme_colours.main.last_enemy));
+        let discard_block = Block::bordered()
+            .title(
+                Line::from(" Discard ")
+                    .italic()
+                    .left_aligned()
+                    .set_style(self.theme_colours.main.discard),
+            )
+            .border_type(ratatui::widgets::BorderType::Rounded)
+            .border_style(Style::default().fg(self.theme_colours.main.discard));
+
+        let weapon_inner = weapon_block_outer.inner(chunks.current_weapon);
+        let weapon_inner_chunks = Layout::default()
+            .direction(ratatui::layout::Direction::Vertical)
+            .constraints([
+                Constraint::Min(0),
+                Constraint::Length(7),
+                Constraint::Min(0),
+            ])
+            .split(weapon_inner);
+
+        let title = Paragraph::new(Line::from("SCOUNDREL"))
+            .set_style(self.theme_colours.main.title)
+            .bold()
+            .centered()
+            .block(title_block);
+
+        frame.render_widget(title, chunks.header);
+        frame.render_widget(deck_block, chunks.deck);
+        frame.render_widget(room_block, chunks.room);
+        frame.render_widget(weapon_block_outer, chunks.current_weapon);
+        frame.render_widget(card, weapon_inner_chunks[1]);
+        frame.render_widget(last_enemy_block, chunks.last_defeated_enemy);
+        frame.render_widget(discard_block, chunks.discard);
     }
 
     fn handle_events(&mut self) -> io::Result<()> {
@@ -170,7 +167,7 @@ impl App {
     }
 
     fn get_card(&self, card: Card) -> Paragraph<'static> {
-        let rank_text = Line::from(format!("{:?}", card.rank as u8)).bold();
+        let rank_text = Line::from(format!("{}AAA", card.rank.display())).bold();
         Paragraph::new(rank_text).set_style(self.theme_colours.suit.colour_for(card.suit))
     }
 }
