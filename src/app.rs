@@ -91,16 +91,51 @@ impl App {
             )
             .border_type(ratatui::widgets::BorderType::Rounded)
             .border_style(Style::default().fg(self.theme_colours.main.discard));
+        let card_border = Block::bordered().border_type(ratatui::widgets::BorderType::Rounded);
 
         let weapon_inner = weapon_block_outer.inner(chunks.current_weapon);
         let weapon_inner_chunks = Layout::default()
             .direction(ratatui::layout::Direction::Vertical)
             .constraints([
                 Constraint::Min(0),
-                Constraint::Length(7),
+                Constraint::Length(14),
                 Constraint::Min(0),
             ])
             .split(weapon_inner);
+        let weapon_inner_chunks = Layout::default()
+            .direction(ratatui::layout::Direction::Horizontal)
+            .constraints([
+                Constraint::Min(0),
+                Constraint::Length(24),
+                Constraint::Min(0),
+            ])
+            .split(weapon_inner_chunks[1]);
+
+        let room_areas = Layout::default()
+            .direction(ratatui::layout::Direction::Horizontal)
+            .constraints([
+                Constraint::Min(0),
+                Constraint::Length(24),
+                Constraint::Length(24),
+                Constraint::Length(24),
+                Constraint::Length(24),
+                Constraint::Min(0),
+            ])
+            .split(chunks.room);
+        let room_inner_areas: Vec<[ratatui::layout::Rect; 3]> = room_areas
+            .iter()
+            .map(|area| {
+                let chunks = Layout::default()
+                    .direction(ratatui::layout::Direction::Vertical)
+                    .constraints([
+                        Constraint::Min(0),
+                        Constraint::Length(14),
+                        Constraint::Min(0),
+                    ])
+                    .split(*area);
+                [chunks[1], chunks[2], chunks[3]]
+            })
+            .collect();
 
         let title = Paragraph::new(Line::from("SCOUNDREL"))
             .set_style(self.theme_colours.main.title)
@@ -108,11 +143,35 @@ impl App {
             .centered()
             .block(title_block);
 
+        let cards = vec![
+            self.get_card(Card::new(
+                crate::card::Suit::Spades,
+                crate::card::Rank::Eight,
+            )),
+            self.get_card(Card::new(crate::card::Suit::Clubs, crate::card::Rank::Five)),
+            self.get_card(Card::new(
+                crate::card::Suit::Diamonds,
+                crate::card::Rank::Ace,
+            )),
+            self.get_card(Card::new(crate::card::Suit::Hearts, crate::card::Rank::Ten)),
+        ];
+
         frame.render_widget(title, chunks.header);
         frame.render_widget(deck_block, chunks.deck);
         frame.render_widget(room_block, chunks.room);
+        for (card_in_room, area) in cards.iter().zip(room_inner_areas.iter()) {
+            frame.render_widget(
+                card_in_room
+                    .clone()
+                    .block(Block::bordered().border_type(ratatui::widgets::BorderType::Rounded)),
+                (*area)[1],
+            );
+        }
         frame.render_widget(weapon_block_outer, chunks.current_weapon);
-        frame.render_widget(card, weapon_inner_chunks[1]);
+        frame.render_widget(
+            card.block(Block::bordered().border_type(ratatui::widgets::BorderType::Rounded)),
+            weapon_inner_chunks[1],
+        );
         frame.render_widget(last_enemy_block, chunks.last_defeated_enemy);
         frame.render_widget(discard_block, chunks.discard);
     }
@@ -167,7 +226,7 @@ impl App {
     }
 
     fn get_card(&self, card: Card) -> Paragraph<'static> {
-        let rank_text = Line::from(format!("{}AAA", card.rank.display())).bold();
+        let rank_text = Line::from(format!("{}", card.rank.display())).bold();
         Paragraph::new(rank_text).set_style(self.theme_colours.suit.colour_for(card.suit))
     }
 }
