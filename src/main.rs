@@ -53,16 +53,6 @@ fn main() -> io::Result<()> {
         Card::new(card::Suit::Hearts, card::Rank::Ten),
     ]);
 
-    deck.shuffle();
-    for _ in 0..10 {
-        if let Some(drawn) = deck.draw() {
-            println!("{:?}", drawn);
-            println!(
-                "{:?}",
-                drawn > Card::new(card::Suit::Clubs, card::Rank::Ten)
-            );
-        }
-    }
-
-    ratatui::run(|terminal| app::App::default().run(terminal))
+    let mut app = app::App::new();
+    ratatui::run(|terminal| app.run(terminal))
 }
