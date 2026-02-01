@@ -5,6 +5,7 @@ use crate::card::{Card, Deck};
 mod app;
 mod card;
 mod colours;
+mod widgets;
 
 fn main() -> io::Result<()> {
     let mut deck = Deck::from_cards(vec![
