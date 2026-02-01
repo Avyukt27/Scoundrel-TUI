@@ -6,7 +6,7 @@ use ratatui::{
     layout::{Constraint, Layout, Rect},
     style::{Color, Style, Styled, Stylize},
     text::Line,
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, Padding, Paragraph},
 };
 
 use crate::card::Card;
@@ -122,18 +122,18 @@ impl App {
                 Constraint::Min(0),
             ])
             .split(chunks.room);
-        let room_inner_areas: Vec<[ratatui::layout::Rect; 3]> = room_areas
+        let room_areas = &room_areas[1..=4];
+        let room_inner_areas: Vec<ratatui::layout::Rect> = room_areas
             .iter()
             .map(|area| {
-                let chunks = Layout::default()
+                Layout::default()
                     .direction(ratatui::layout::Direction::Vertical)
                     .constraints([
                         Constraint::Min(0),
                         Constraint::Length(14),
                         Constraint::Min(0),
                     ])
-                    .split(*area);
-                [chunks[1], chunks[2], chunks[3]]
+                    .split(*area)[1]
             })
             .collect();
 
@@ -161,15 +161,21 @@ impl App {
         frame.render_widget(room_block, chunks.room);
         for (card_in_room, area) in cards.iter().zip(room_inner_areas.iter()) {
             frame.render_widget(
-                card_in_room
-                    .clone()
-                    .block(Block::bordered().border_type(ratatui::widgets::BorderType::Rounded)),
-                (*area)[1],
+                card_in_room.clone().block(
+                    Block::bordered()
+                        .border_type(ratatui::widgets::BorderType::Rounded)
+                        .padding(Padding::vertical(1)),
+                ),
+                *area,
             );
         }
         frame.render_widget(weapon_block_outer, chunks.current_weapon);
         frame.render_widget(
-            card.block(Block::bordered().border_type(ratatui::widgets::BorderType::Rounded)),
+            card.block(
+                Block::bordered()
+                    .border_type(ratatui::widgets::BorderType::Rounded)
+                    .padding(Padding::vertical(1)),
+            ),
             weapon_inner_chunks[1],
         );
         frame.render_widget(last_enemy_block, chunks.last_defeated_enemy);
@@ -226,7 +232,7 @@ impl App {
     }
 
     fn get_card(&self, card: Card) -> Paragraph<'static> {
-        let rank_text = Line::from(format!("{}", card.rank.display())).bold();
+        let rank_text = Line::from(format!("   {}", card.rank.display())).bold();
         Paragraph::new(rank_text).set_style(self.theme_colours.suit.colour_for(card.suit))
     }
 }
