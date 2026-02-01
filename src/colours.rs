@@ -40,7 +40,7 @@ impl MainColours {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct SuitColours {
     pub clubs: Color,
     pub diamonds: Color,
@@ -55,15 +55,6 @@ impl SuitColours {
             diamonds: Color::Rgb(180, 140, 70),
             hearts: Color::Rgb(170, 60, 60),
             spades: Color::Rgb(90, 110, 140),
-        }
-    }
-
-    pub fn colour_for(&self, suit: Suit) -> Color {
-        match suit {
-            Suit::Clubs => self.clubs,
-            Suit::Diamonds => self.diamonds,
-            Suit::Hearts => self.hearts,
-            Suit::Spades => self.spades,
         }
     }
 }

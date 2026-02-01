@@ -4,9 +4,9 @@ use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
     DefaultTerminal, Frame,
     layout::{Constraint, Layout, Rect},
-    style::{Color, Style, Styled, Stylize},
+    style::{Style, Styled, Stylize},
     text::Line,
-    widgets::{Block, Borders, Padding, Paragraph},
+    widgets::{Block, Borders, Paragraph},
 };
 
 use crate::colours::ThemeColours;
@@ -38,8 +38,7 @@ impl App {
         let chunks = self.get_layout(frame);
 
         let title_block = Block::bordered()
-            .borders(Borders::ALL)
-            .border_type(ratatui::widgets::BorderType::Thick)
+            .border_type(ratatui::widgets::BorderType::HeavyTripleDashed)
             .border_style(Style::default().fg(self.theme_colours.main.title));
         let deck_block = Block::bordered()
             .title(
@@ -48,7 +47,7 @@ impl App {
                     .left_aligned()
                     .set_style(self.theme_colours.main.deck),
             )
-            .border_type(ratatui::widgets::BorderType::Rounded)
+            .border_type(ratatui::widgets::BorderType::Plain)
             .border_style(Style::default().fg(self.theme_colours.main.deck));
         let room_block = Block::bordered()
             .title(
@@ -57,7 +56,7 @@ impl App {
                     .left_aligned()
                     .set_style(self.theme_colours.main.room),
             )
-            .border_type(ratatui::widgets::BorderType::Rounded)
+            .border_type(ratatui::widgets::BorderType::Plain)
             .border_style(Style::default().fg(self.theme_colours.main.room));
         let weapon_block_outer = Block::bordered()
             .title(
@@ -66,7 +65,7 @@ impl App {
                     .left_aligned()
                     .set_style(self.theme_colours.main.weapon),
             )
-            .border_type(ratatui::widgets::BorderType::Rounded)
+            .border_type(ratatui::widgets::BorderType::Plain)
             .border_style(Style::default().fg(self.theme_colours.main.weapon));
         let last_enemy_block = Block::bordered()
             .title(
@@ -75,7 +74,7 @@ impl App {
                     .left_aligned()
                     .set_style(self.theme_colours.main.last_enemy),
             )
-            .border_type(ratatui::widgets::BorderType::Rounded)
+            .border_type(ratatui::widgets::BorderType::Plain)
             .border_style(Style::default().fg(self.theme_colours.main.last_enemy));
         let discard_block = Block::bordered()
             .title(
@@ -84,9 +83,8 @@ impl App {
                     .left_aligned()
                     .set_style(self.theme_colours.main.discard),
             )
-            .border_type(ratatui::widgets::BorderType::Rounded)
+            .border_type(ratatui::widgets::BorderType::Plain)
             .border_style(Style::default().fg(self.theme_colours.main.discard));
-        let card_border = Block::bordered().border_type(ratatui::widgets::BorderType::Rounded);
 
         let weapon_inner = weapon_block_outer.inner(chunks.current_weapon);
         let weapon_inner_chunks = Layout::default()
@@ -152,6 +150,7 @@ impl App {
             let widget = CardWidget {
                 rank: card_in_room.rank,
                 suit: card_in_room.suit,
+                suit_colours: self.theme_colours.suit.clone(),
             };
             frame.render_widget(widget, *area);
         }
@@ -160,6 +159,7 @@ impl App {
             CardWidget {
                 rank: crate::card::Rank::Nine,
                 suit: crate::card::Suit::Clubs,
+                suit_colours: self.theme_colours.suit.clone(),
             },
             weapon_inner_chunks[1],
         );
