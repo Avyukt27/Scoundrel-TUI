@@ -1,9 +1,9 @@
+use rand::{rng, seq::SliceRandom};
 use std::cmp::Ordering;
 
 #[repr(u8)]
-#[derive(Default, Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Rank {
-    #[default]
     Two = 2,
     Three,
     Four,
@@ -20,19 +20,18 @@ pub enum Rank {
 }
 
 #[repr(u8)]
-#[derive(Default, Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Suit {
-    #[default]
     Clubs,
     Diamonds,
     Hearts,
     Spades,
 }
 
-#[derive(Default, Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Card {
-    pub suit: Suit,
     pub rank: Rank,
+    pub suit: Suit,
 }
 
 impl Card {
@@ -43,12 +42,36 @@ impl Card {
 
 impl Ord for Card {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.rank.cmp(&other.rank).then(self.suit.cmp(&other.suit))
+        self.rank.cmp(&other.rank)
     }
 }
 
 impl PartialOrd for Card {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
+    }
+}
+
+#[derive(Debug)]
+pub struct Deck {
+    cards: Vec<Card>,
+}
+
+impl Deck {
+    pub fn from_cards(cards: Vec<Card>) -> Self {
+        Deck { cards }
+    }
+
+    pub fn draw(&mut self) -> Option<Card> {
+        self.cards.pop()
+    }
+
+    pub fn add_to_end(&mut self, card: Card) {
+        self.cards.push(card);
+    }
+
+    pub fn shuffle(&mut self) {
+        let mut rng = rng();
+        self.cards.shuffle(&mut rng);
     }
 }

@@ -1,28 +1,68 @@
 use std::io;
 
+use crate::card::{Card, Deck};
+
 mod app;
 mod card;
 
-use card::{Rank, Suit};
-
 fn main() -> io::Result<()> {
-    const ALL_RANKS: [Rank; 13] = [
-        Rank::Two,
-        Rank::Three,
-        Rank::Four,
-        Rank::Five,
-        Rank::Six,
-        Rank::Seven,
-        Rank::Eight,
-        Rank::Nine,
-        Rank::Ten,
-        Rank::Jack,
-        Rank::Queen,
-        Rank::King,
-        Rank::Ace,
-    ];
+    let mut deck = Deck::from_cards(vec![
+        Card::new(card::Suit::Spades, card::Rank::Two),
+        Card::new(card::Suit::Spades, card::Rank::Three),
+        Card::new(card::Suit::Spades, card::Rank::Four),
+        Card::new(card::Suit::Spades, card::Rank::Five),
+        Card::new(card::Suit::Spades, card::Rank::Six),
+        Card::new(card::Suit::Spades, card::Rank::Seven),
+        Card::new(card::Suit::Spades, card::Rank::Eight),
+        Card::new(card::Suit::Spades, card::Rank::Nine),
+        Card::new(card::Suit::Spades, card::Rank::Ten),
+        Card::new(card::Suit::Spades, card::Rank::Jack),
+        Card::new(card::Suit::Spades, card::Rank::Queen),
+        Card::new(card::Suit::Spades, card::Rank::King),
+        Card::new(card::Suit::Spades, card::Rank::Ace),
+        Card::new(card::Suit::Clubs, card::Rank::Two),
+        Card::new(card::Suit::Clubs, card::Rank::Three),
+        Card::new(card::Suit::Clubs, card::Rank::Four),
+        Card::new(card::Suit::Clubs, card::Rank::Five),
+        Card::new(card::Suit::Clubs, card::Rank::Six),
+        Card::new(card::Suit::Clubs, card::Rank::Seven),
+        Card::new(card::Suit::Clubs, card::Rank::Eight),
+        Card::new(card::Suit::Clubs, card::Rank::Nine),
+        Card::new(card::Suit::Clubs, card::Rank::Ten),
+        Card::new(card::Suit::Clubs, card::Rank::Jack),
+        Card::new(card::Suit::Clubs, card::Rank::Queen),
+        Card::new(card::Suit::Clubs, card::Rank::King),
+        Card::new(card::Suit::Clubs, card::Rank::Ace),
+        Card::new(card::Suit::Diamonds, card::Rank::Two),
+        Card::new(card::Suit::Diamonds, card::Rank::Three),
+        Card::new(card::Suit::Diamonds, card::Rank::Four),
+        Card::new(card::Suit::Diamonds, card::Rank::Five),
+        Card::new(card::Suit::Diamonds, card::Rank::Six),
+        Card::new(card::Suit::Diamonds, card::Rank::Seven),
+        Card::new(card::Suit::Diamonds, card::Rank::Eight),
+        Card::new(card::Suit::Diamonds, card::Rank::Nine),
+        Card::new(card::Suit::Diamonds, card::Rank::Ten),
+        Card::new(card::Suit::Hearts, card::Rank::Two),
+        Card::new(card::Suit::Hearts, card::Rank::Three),
+        Card::new(card::Suit::Hearts, card::Rank::Four),
+        Card::new(card::Suit::Hearts, card::Rank::Five),
+        Card::new(card::Suit::Hearts, card::Rank::Six),
+        Card::new(card::Suit::Hearts, card::Rank::Seven),
+        Card::new(card::Suit::Hearts, card::Rank::Eight),
+        Card::new(card::Suit::Hearts, card::Rank::Nine),
+        Card::new(card::Suit::Hearts, card::Rank::Ten),
+    ]);
 
-    const ALL_SUITS: [Suit; 4] = [Suit::Clubs, Suit::Diamonds, Suit::Hearts, Suit::Spades];
+    deck.shuffle();
+    for _ in 0..10 {
+        if let Some(drawn) = deck.draw() {
+            println!("{:?}", drawn);
+            println!(
+                "{:?}",
+                drawn > Card::new(card::Suit::Clubs, card::Rank::Ten)
+            );
+        }
+    }
 
     ratatui::run(|terminal| app::App::default().run(terminal))
 }

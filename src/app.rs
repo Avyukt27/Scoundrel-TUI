@@ -1,14 +1,14 @@
-use std::io;
+use std::{io, rc::Rc};
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
     DefaultTerminal, Frame,
     buffer::Buffer,
-    layout::Rect,
+    layout::{Constraint, Layout, Rect},
     style::Stylize,
     symbols::border,
     text::{Line, Text},
-    widgets::{Block, Paragraph, Widget},
+    widgets::{Block, Borders, Paragraph, Widget},
 };
 
 #[derive(Default, Debug)]
@@ -27,7 +27,33 @@ impl App {
     }
 
     fn draw(&self, frame: &mut Frame) {
-        frame.render_widget(self, frame.area());
+        let chunks = self.get_layout(frame);
+
+        let title = Line::from(" Example Title ".yellow().bold());
+        let body_left_block_title = Line::from(" Left block title ".red().italic());
+        let body_right_block_title = Line::from(" Right block title ".green().italic());
+
+        frame.render_widget(
+            Block::bordered()
+                .title(title.centered())
+                .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Double),
+            chunks.header,
+        );
+        frame.render_widget(
+            Block::bordered()
+                .title(body_left_block_title.left_aligned())
+                .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded),
+            chunks.body_left,
+        );
+        frame.render_widget(
+            Block::bordered()
+                .title(body_right_block_title.left_aligned())
+                .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded),
+            chunks.body_right,
+        );
     }
 
     fn handle_events(&mut self) -> io::Result<()> {
@@ -43,37 +69,30 @@ impl App {
     fn handle_key_event(&mut self, key_event: KeyEvent) {
         match key_event.code {
             KeyCode::Char('q') => self.exit = true,
-            KeyCode::Up => self.counter = self.counter.saturating_add(1),
-            KeyCode::Down => self.counter = self.counter.saturating_sub(1),
             _ => {}
+        }
+    }
+
+    fn get_layout(&self, frame: &mut Frame) -> UiLayout {
+        let header = Layout::default()
+            .direction(ratatui::layout::Direction::Vertical)
+            .constraints([Constraint::Percentage(15), Constraint::Min(0)])
+            .split(frame.area());
+        let body = Layout::default()
+            .direction(ratatui::layout::Direction::Horizontal)
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+            .split(header[1]);
+
+        UiLayout {
+            header: header[0],
+            body_left: body[0],
+            body_right: body[1],
         }
     }
 }
 
-impl Widget for &App {
-    fn render(self, area: Rect, buf: &mut Buffer) {
-        let title = Line::from(" Counter App Tutorial ".bold());
-        let instructions = Line::from(vec![
-            " Decrement ".into(),
-            "<Left>".blue().bold(),
-            " Increment ".into(),
-            "<Right>".blue().bold(),
-            " Quit ".into(),
-            "<Q> ".blue().bold(),
-        ]);
-        let block = Block::bordered()
-            .title(title.centered())
-            .title_bottom(instructions.centered())
-            .border_set(border::THICK);
-
-        let counter_text = Text::from(vec![Line::from(vec![
-            "Value: ".into(),
-            self.counter.to_string().yellow(),
-        ])]);
-
-        Paragraph::new(counter_text)
-            .centered()
-            .block(block)
-            .render(area, buf);
-    }
+struct UiLayout {
+    header: Rect,
+    body_left: Rect,
+    body_right: Rect,
 }
