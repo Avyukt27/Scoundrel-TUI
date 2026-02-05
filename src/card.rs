@@ -48,7 +48,7 @@ pub enum Suit {
     Spades,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Card {
     pub rank: Rank,
     pub suit: Suit,

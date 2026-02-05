@@ -3,6 +3,7 @@ use std::io;
 mod app;
 mod card;
 mod colours;
+mod scenes;
 mod widgets;
 
 fn main() -> io::Result<()> {

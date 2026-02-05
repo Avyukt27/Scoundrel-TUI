@@ -1,8 +1,6 @@
 use ratatui::style::Color;
 
-use crate::card::Suit;
-
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct ThemeColours {
     pub main: MainColours,
     pub suit: SuitColours,
@@ -17,7 +15,7 @@ impl ThemeColours {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct MainColours {
     pub title: Color,
     pub deck: Color,
