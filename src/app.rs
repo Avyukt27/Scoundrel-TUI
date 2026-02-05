@@ -14,6 +14,7 @@ use crate::{card::Deck, colours::ThemeColours};
 
 #[derive(Debug)]
 pub struct App {
+    mode: Mode,
     exit: bool,
     theme_colours: ThemeColours,
     deck: Deck,
@@ -25,55 +26,11 @@ pub struct App {
 
 impl App {
     pub fn new() -> Self {
-        let mut deck = Deck::from_cards(vec![
-            Card::new(crate::card::Suit::Spades, crate::card::Rank::Two),
-            Card::new(crate::card::Suit::Spades, crate::card::Rank::Three),
-            Card::new(crate::card::Suit::Spades, crate::card::Rank::Four),
-            Card::new(crate::card::Suit::Spades, crate::card::Rank::Five),
-            Card::new(crate::card::Suit::Spades, crate::card::Rank::Six),
-            Card::new(crate::card::Suit::Spades, crate::card::Rank::Seven),
-            Card::new(crate::card::Suit::Spades, crate::card::Rank::Eight),
-            Card::new(crate::card::Suit::Spades, crate::card::Rank::Nine),
-            Card::new(crate::card::Suit::Spades, crate::card::Rank::Ten),
-            Card::new(crate::card::Suit::Spades, crate::card::Rank::Jack),
-            Card::new(crate::card::Suit::Spades, crate::card::Rank::Queen),
-            Card::new(crate::card::Suit::Spades, crate::card::Rank::King),
-            Card::new(crate::card::Suit::Spades, crate::card::Rank::Ace),
-            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Two),
-            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Three),
-            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Four),
-            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Five),
-            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Six),
-            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Seven),
-            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Eight),
-            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Nine),
-            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Ten),
-            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Jack),
-            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Queen),
-            Card::new(crate::card::Suit::Clubs, crate::card::Rank::King),
-            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Ace),
-            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Two),
-            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Three),
-            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Four),
-            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Five),
-            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Six),
-            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Seven),
-            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Eight),
-            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Nine),
-            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Ten),
-            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Two),
-            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Three),
-            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Four),
-            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Five),
-            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Six),
-            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Seven),
-            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Eight),
-            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Nine),
-            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Ten),
-        ]);
+        let mut deck = Deck::dungeon();
         deck.shuffle();
 
         Self {
+            mode: Mode::MainMenu,
             exit: false,
             theme_colours: ThemeColours::dungeon(),
             deck,
@@ -93,6 +50,62 @@ impl App {
     }
 
     fn draw(&self, frame: &mut Frame) {
+        match self.mode {
+            Mode::MainMenu => {}
+            Mode::Game => self.draw_game(frame),
+        }
+    }
+
+    fn handle_events(&mut self) -> io::Result<()> {
+        match event::read()? {
+            Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
+                self.handle_key_event(key_event);
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    fn handle_key_event(&mut self, key_event: KeyEvent) {
+        match key_event.code {
+            KeyCode::Char('q') => self.exit = true,
+            _ => {}
+        }
+    }
+
+    fn get_layout(&self, frame: &mut Frame) -> UiLayout {
+        let header = Layout::default()
+            .direction(ratatui::layout::Direction::Vertical)
+            .constraints([Constraint::Max(3), Constraint::Min(0)])
+            .split(frame.area());
+        let row_1 = Layout::default()
+            .direction(ratatui::layout::Direction::Vertical)
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+            .split(header[1]);
+        let row_2 = Layout::default()
+            .direction(ratatui::layout::Direction::Horizontal)
+            .constraints([Constraint::Percentage(20), Constraint::Percentage(80)])
+            .split(row_1[0]);
+        let row_3 = Layout::default()
+            .direction(ratatui::layout::Direction::Horizontal)
+            .constraints([
+                Constraint::Min(20),
+                Constraint::Min(20),
+                Constraint::Max(30),
+            ])
+            .split(row_1[1]);
+
+        UiLayout {
+            header: header[0],
+            deck: row_2[0],
+            room: row_2[1],
+            current_weapon: row_3[0],
+            last_defeated_enemy: row_3[1],
+            discard: row_3[2],
+        }
+    }
+
+    fn draw_game(&self, frame: &mut Frame) {
         let chunks = self.get_layout(frame);
 
         let title_block = Block::bordered()
@@ -281,55 +294,6 @@ impl App {
             );
         }
     }
-
-    fn handle_events(&mut self) -> io::Result<()> {
-        match event::read()? {
-            Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
-                self.handle_key_event(key_event);
-            }
-            _ => {}
-        }
-        Ok(())
-    }
-
-    fn handle_key_event(&mut self, key_event: KeyEvent) {
-        match key_event.code {
-            KeyCode::Char('q') => self.exit = true,
-            _ => {}
-        }
-    }
-
-    fn get_layout(&self, frame: &mut Frame) -> UiLayout {
-        let header = Layout::default()
-            .direction(ratatui::layout::Direction::Vertical)
-            .constraints([Constraint::Max(3), Constraint::Min(0)])
-            .split(frame.area());
-        let row_1 = Layout::default()
-            .direction(ratatui::layout::Direction::Vertical)
-            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
-            .split(header[1]);
-        let row_2 = Layout::default()
-            .direction(ratatui::layout::Direction::Horizontal)
-            .constraints([Constraint::Percentage(20), Constraint::Percentage(80)])
-            .split(row_1[0]);
-        let row_3 = Layout::default()
-            .direction(ratatui::layout::Direction::Horizontal)
-            .constraints([
-                Constraint::Min(20),
-                Constraint::Min(20),
-                Constraint::Max(30),
-            ])
-            .split(row_1[1]);
-
-        UiLayout {
-            header: header[0],
-            deck: row_2[0],
-            room: row_2[1],
-            current_weapon: row_3[0],
-            last_defeated_enemy: row_3[1],
-            discard: row_3[2],
-        }
-    }
 }
 
 struct UiLayout {
@@ -339,4 +303,10 @@ struct UiLayout {
     current_weapon: Rect,
     last_defeated_enemy: Rect,
     discard: Rect,
+}
+
+#[derive(Debug)]
+enum Mode {
+    MainMenu,
+    Game,
 }

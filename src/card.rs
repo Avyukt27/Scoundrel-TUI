@@ -94,4 +94,53 @@ impl Deck {
         let mut rng = rng();
         self.cards.shuffle(&mut rng);
     }
+
+    pub fn dungeon() -> Self {
+        Deck::from_cards(vec![
+            Card::new(crate::card::Suit::Spades, crate::card::Rank::Two),
+            Card::new(crate::card::Suit::Spades, crate::card::Rank::Three),
+            Card::new(crate::card::Suit::Spades, crate::card::Rank::Four),
+            Card::new(crate::card::Suit::Spades, crate::card::Rank::Five),
+            Card::new(crate::card::Suit::Spades, crate::card::Rank::Six),
+            Card::new(crate::card::Suit::Spades, crate::card::Rank::Seven),
+            Card::new(crate::card::Suit::Spades, crate::card::Rank::Eight),
+            Card::new(crate::card::Suit::Spades, crate::card::Rank::Nine),
+            Card::new(crate::card::Suit::Spades, crate::card::Rank::Ten),
+            Card::new(crate::card::Suit::Spades, crate::card::Rank::Jack),
+            Card::new(crate::card::Suit::Spades, crate::card::Rank::Queen),
+            Card::new(crate::card::Suit::Spades, crate::card::Rank::King),
+            Card::new(crate::card::Suit::Spades, crate::card::Rank::Ace),
+            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Two),
+            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Three),
+            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Four),
+            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Five),
+            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Six),
+            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Seven),
+            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Eight),
+            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Nine),
+            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Ten),
+            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Jack),
+            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Queen),
+            Card::new(crate::card::Suit::Clubs, crate::card::Rank::King),
+            Card::new(crate::card::Suit::Clubs, crate::card::Rank::Ace),
+            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Two),
+            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Three),
+            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Four),
+            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Five),
+            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Six),
+            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Seven),
+            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Eight),
+            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Nine),
+            Card::new(crate::card::Suit::Diamonds, crate::card::Rank::Ten),
+            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Two),
+            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Three),
+            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Four),
+            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Five),
+            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Six),
+            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Seven),
+            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Eight),
+            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Nine),
+            Card::new(crate::card::Suit::Hearts, crate::card::Rank::Ten),
+        ])
+    }
 }
